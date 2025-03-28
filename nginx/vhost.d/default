@@ -1,0 +1,11 @@
+location /static/ {
+    proxy_pass https://djangoset-media.s3.ap-southeast-2.amazonaws.com/static/;
+    proxy_set_header Host djangoset-media.s3.ap-southeast-2.amazonaws.com;
+    add_header Access-Control-Allow-Origin *;
+}
+
+location /media/ {
+    proxy_pass https://djangoset-media.s3.ap-southeast-2.amazonaws.com/;
+    proxy_set_header Host djangoset-media.s3.ap-southeast-2.amazonaws.com;
+    add_header Access-Control-Allow-Origin *;
+}
