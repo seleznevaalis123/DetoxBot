@@ -12,13 +12,13 @@ source venv/bin/activate       # активировать окружение
 pip install -r requirements.txt  # установить зависимости
 
 cp .env.example .env           # скопировать настройки окружения (если есть .env.example)
-# затем отредактировать .env и добавить свои ключи / настройки
+#отредактировать .env и добавить свои ключи / настройки
+
 
 python manage.py migrate       # применить миграции
 python manage.py createsuperuser  # создать суперпользователя (опционально)
 
 python manage.py runserver     # запустить сервер разработки (http://127.0.0.1:8000/admin)
 
-# пример полезных команд: (опционально)
-pip install <package> && pip freeze > requirements.txt   # установить пакет и обновить список зависимостей
+#опционально
 python manage.py test          # запустить тесты
