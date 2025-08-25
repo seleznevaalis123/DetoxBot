@@ -75,7 +75,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'tinymce',
-    'email_signals',
+    # 'django_email_signals',
 ]
 
 MIDDLEWARE = [
