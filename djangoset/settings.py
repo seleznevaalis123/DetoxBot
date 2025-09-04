@@ -75,8 +75,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'tinymce',
+    'graphene_django',
     # 'django_email_signals',
 ]
+GRAPHENE = {
+    "SCHEMA": "djangoset.schema.schema"
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
