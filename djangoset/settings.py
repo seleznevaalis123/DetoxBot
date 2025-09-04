@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'storages',
     'tinymce',
     'graphene_django',
+    'corsheaders'
     # 'django_email_signals',
 ]
 GRAPHENE = {
@@ -91,10 +92,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-
-
-
+    'corsheaders.middleware.CorsMiddleware'
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'djangoset.urls'
 

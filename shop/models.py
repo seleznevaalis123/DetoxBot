@@ -23,7 +23,7 @@ class Category(models.Model):
 
     category_name = models.CharField(verbose_name='Категория', max_length=250)
     category_desc = models.TextField(verbose_name='Описание категории', default='default', max_length=2000, null=True)
-    category_photo = models.ImageField(upload_to='media/', verbose_name='Фото')
+    category_photo = models.ImageField(upload_to='', verbose_name='Фото')
 
     def __str__(self):
         return f'{self.category_name}'
@@ -46,7 +46,7 @@ class TeaItems(models.Model):
     item_price_rub = models.FloatField(verbose_name='Цена в RUB', null=True, blank=True, default=0.000)
 
     item_weight = models.CharField(verbose_name='Вес', null=True, blank=True, max_length=250)
-    item_photo = models.ImageField(upload_to='media/', verbose_name='Фото')
+    item_photo = models.ImageField(upload_to='', verbose_name='Фото')
 
     def __str__(self):
         return f'{self.item_name}'
@@ -126,7 +126,7 @@ class Announcements(models.Model):
         verbose_name_plural = 'События'
 
     announcement_desc = models.TextField(verbose_name='Описание', max_length=2000)
-    item_photo = models.ImageField(upload_to='media/', verbose_name='Фото события')
+    item_photo = models.ImageField(upload_to='', verbose_name='Фото события')
 
 
 # class Customer(models.Model, EmailSignalMixin):
