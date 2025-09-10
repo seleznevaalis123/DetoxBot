@@ -60,8 +60,8 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG')
 DJANGO_ALLOW_ASYNC_UNSAFE = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'bot.pushkatea.space']
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337', 'https://bot.pushkatea.space']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'bot.pushkatea.space', 'detoxbot-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337', 'https://bot.pushkatea.space', 'https://detoxbot-production.up.railway.app']
 
 
 INSTALLED_APPS = [
@@ -95,6 +95,11 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware'
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # фронт локально
+#     "https://your-railway-frontend-url.com"
+# ]
 
 ROOT_URLCONF = 'djangoset.urls'
 
