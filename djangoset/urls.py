@@ -5,14 +5,12 @@ from django.conf.urls.static import static
 from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
 from .schema import schema
-from main import telegram_webhook  # импорт твоего webhook из main.py
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('email-signals/', include('email_signals.urls')),
     path('tinymce/', include('tinymce.urls')),
     path("graphql/", csrf_exempt(GraphQLView.as_view(graphiql=True, schema=schema))),
-    path("bot-webhook/", csrf_exempt(telegram_webhook)),
 ]
 
 if settings.DEBUG:
