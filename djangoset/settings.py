@@ -24,19 +24,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 USE_S3 = os.getenv('USE_S3') == 'TRUE'
 
 if USE_S3:
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  # твой Идентификатор ключа
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # твой Секретный ключ
+    # Ключи доступа к Yandex S3 (статические ключи)
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')      # key_id
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # secret
     AWS_STORAGE_BUCKET_NAME = 'selezneva'  # имя бакета
-    AWS_S3_REGION_NAME = 'ru-central1'  # регион бакета
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net'
 
+    # Настройки для Django Storages
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.storage.yandexcloud.net'
+    AWS_DEFAULT_ACL = None  # public-read можно оставить None
+
+    # Статика
     STATIC_LOCATION = 'static'
     STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/'
     STATICFILES_STORAGE = 'djangoset.storage_backends.StaticStorage'
 
+    # Публичные медиа (доступные по ссылке)
     PUBLIC_MEDIA_LOCATION = 'media'
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/'
     DEFAULT_FILE_STORAGE = 'djangoset.storage_backends.PublicMediaStorage'
+
+    # Приватные медиа (если нужны)
+    PRIVATE_MEDIA_LOCATION = 'private'
+    PRIVATE_FILE_STORAGE = 'djangoset.storage_backends.PrivateMediaStorage'
+
 else:
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
