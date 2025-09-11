@@ -1,11 +1,10 @@
 from storages.backends.s3boto3 import S3Boto3Storage
 from boto3.s3.transfer import TransferConfig
 
-# Настройка для безопасной загрузки
 DEFAULT_TRANSFER_CONFIG = TransferConfig(
-    multipart_threshold=10 * 1024 * 1024,  # 10MB — файлы меньше будут загружаться обычным PUT
-    max_concurrency=2,  # меньше потоков, меньше вероятность подвисания
-    multipart_chunksize=5 * 1024 * 1024,  # размер частей для multipart
+    multipart_threshold=15 * 1024 * 1024,  # файлы < 15MB — обычный PUT
+    max_concurrency=2,                     # меньше потоков
+    multipart_chunksize=5 * 1024 * 1024,   # размер части для больших файлов
     use_threads=True
 )
 
