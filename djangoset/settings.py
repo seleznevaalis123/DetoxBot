@@ -27,7 +27,7 @@ if USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  # твой Идентификатор ключа
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # твой Секретный ключ
     AWS_STORAGE_BUCKET_NAME = 'selezneva'  # имя бакета
-    AWS_S3_REGION_NAME = 'ru-central1-a'  # регион бакета
+    AWS_S3_REGION_NAME = 'ru-central1'  # регион бакета
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net'
 
     STATIC_LOCATION = 'static'
