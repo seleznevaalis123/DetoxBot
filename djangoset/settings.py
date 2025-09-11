@@ -86,12 +86,13 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware'
 ]
-CORS_ALLOW_ALL_ORIGINS = True
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",  # фронт локально
-#     "https://your-railway-frontend-url.com"
-# ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://detoxbot-production.up.railway.app",
+]
+
 
 ROOT_URLCONF = 'djangoset.urls'
 
