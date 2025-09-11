@@ -32,8 +32,8 @@ if USE_S3:
     AWS_S3_REGION_NAME = 'ru-central1'
     AWS_S3_ENDPOINT_URL = 'https://storage.yandexcloud.net'
 
-    STATICFILES_STORAGE = 'djangoset.storages.StaticStorage'
-    DEFAULT_FILE_STORAGE = 'djangoset.storages.PublicMediaStorage'
+    STATICFILES_STORAGE = 'djangoset.storage_backends.StaticStorage'
+    DEFAULT_FILE_STORAGE = 'djangoset.storage_backends.PublicMediaStorage'
 
     STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/static/'
     MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/media/'
