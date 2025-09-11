@@ -24,28 +24,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 USE_S3 = os.getenv('USE_S3') == 'TRUE'
 
 if USE_S3:
-    # Ключи доступа к Yandex S3 (статические ключи)
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')      # key_id
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')  # key_id из Yandex
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')  # secret
     AWS_STORAGE_BUCKET_NAME = 'selezneva'  # имя бакета
 
-    # Настройки для Django Storages
+    # Указываем endpoint для Yandex Object Storage
+    AWS_S3_ENDPOINT_URL = 'https://storage.yandexcloud.net'
+
+    # Не указываем регион — Yandex S3 его не требует
+    AWS_S3_REGION_NAME = None
+
+    # Настройка домена для хранения статики/медиа
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.storage.yandexcloud.net'
-    AWS_DEFAULT_ACL = None  # public-read можно оставить None
 
-    # Статика
-    STATIC_LOCATION = 'static'
-    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/'
-    STATICFILES_STORAGE = 'djangoset.storage_backends.StaticStorage'
+    # Используем Path-style URL, чтобы не было проблем с точками в имени бакета
+    AWS_S3_ADDRESSING_STYLE = "path"
 
-    # Публичные медиа (доступные по ссылке)
-    PUBLIC_MEDIA_LOCATION = 'media'
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/'
-    DEFAULT_FILE_STORAGE = 'djangoset.storage_backends.PublicMediaStorage'
+    # Статические файлы
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
 
-    # Приватные медиа (если нужны)
-    PRIVATE_MEDIA_LOCATION = 'private'
-    PRIVATE_FILE_STORAGE = 'djangoset.storage_backends.PrivateMediaStorage'
+    # Медиа файлы
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
 else:
     STATIC_URL = '/static/'
