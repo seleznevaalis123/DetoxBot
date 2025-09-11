@@ -23,6 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 USE_S3 = os.getenv('USE_S3') == 'TRUE'
 
+USE_S3 = True
+
 if USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
@@ -30,29 +32,16 @@ if USE_S3:
     AWS_S3_REGION_NAME = 'ru-central1'
     AWS_S3_ENDPOINT_URL = 'https://storage.yandexcloud.net'
 
-    # STATIC файлы
-    STATIC_LOCATION = 'static'
-    STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/{STATIC_LOCATION}/'
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATICFILES_STORAGE = 'djangoset.storages.StaticStorage'
+    DEFAULT_FILE_STORAGE = 'djangoset.storages.PublicMediaStorage'
 
-    # MEDIA файлы
-    MEDIA_LOCATION = 'media'
-    MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/{MEDIA_LOCATION}/'
-
-    # Для корректного разделения используем отдельный класс
-    class MediaStorage(S3Boto3Storage):
-        location = MEDIA_LOCATION
-
-    DEFAULT_FILE_STORAGE = 'my_project.settings.MediaStorage'
-
+    STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/static/'
+    MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/media/'
 else:
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', default=get_random_secret_key())
