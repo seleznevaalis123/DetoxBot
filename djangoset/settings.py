@@ -35,10 +35,16 @@ if USE_S3:
     STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/{STATIC_LOCATION}/'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    # MEDIA файлы (для загружаемых пользователями)
+    # MEDIA файлы
     MEDIA_LOCATION = 'media'
     MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.yc.cloud.yandex.net/{MEDIA_LOCATION}/'
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    # Для корректного разделения используем отдельный класс
+    class MediaStorage(S3Boto3Storage):
+        location = MEDIA_LOCATION
+
+    DEFAULT_FILE_STORAGE = 'my_project.settings.MediaStorage'
+
 else:
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
