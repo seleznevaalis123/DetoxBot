@@ -52,8 +52,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG')
 DJANGO_ALLOW_ASYNC_UNSAFE = True
-ALLOWED_HOSTS = ['localhost', 'detoxbot-production.up.railway.app']
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337', 'https://bot.pushkatea.space', 'https://detoxbot-production.up.railway.app']
+ALLOWED_HOSTS = ['localhost', 'detoxbot-production.up.railway.app', 'pushkatea.space', 'frontend-bot1.vercel.app/']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337', 'https://pushkatea.space', 'https://detoxbot-production.up.railway.app',
+                        'https://frontend-bot1.vercel.app/']
 
 
 INSTALLED_APPS = [
@@ -93,6 +94,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://detoxbot-production.up.railway.app",
     "https://frontend-bot1.vercel.app",
+    "https://pushkatea.space/",
 ]
 
 
