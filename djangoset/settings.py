@@ -94,7 +94,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://detoxbot-production.up.railway.app",
     "https://frontend-bot1.vercel.app",
-    "https://pushkatea.space/",
+    "https://pushkatea.space",
 ]
 
 
