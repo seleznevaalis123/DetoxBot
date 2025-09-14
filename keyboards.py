@@ -10,7 +10,7 @@ class MyCallback(CallbackData, prefix="my"):
 
 def get_main_blank():
     builder = InlineKeyboardBuilder()
-    miniapp_url = "https://pushkatea.space/"
+    miniapp_url = "https://pushkatea.space"
     builder.add(InlineKeyboardButton(text="㊙️МАГАЗИН",web_app=WebAppInfo(url=miniapp_url))),
     builder.add(InlineKeyboardButton(text='💗TG ДВИЖ', url='https://t.me/panda_tea_bali')),
     builder.add(InlineKeyboardButton(text='📣АНОНСЫ', callback_data=MyCallback(foo='announcement').pack())),
