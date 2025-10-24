@@ -81,10 +81,3 @@ class CreateOrder(graphene.Mutation):
         cart_items.delete()
         return CreateOrder(ok=True, order=order)
 
-
-class Mutation(graphene.ObjectType):
-    add_to_cart = AddToCart.Field()
-    create_order = CreateOrder.Field()
-
-
-schema = graphene.Schema(query=Query, mutation=Mutation)
