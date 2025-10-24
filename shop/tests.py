@@ -1,7 +1,7 @@
 from django.test import TestCase
 from graphene.test import Client
 from shop.models import Category, TeaItems
-from djangoset.schema import schema  # твоя глобальная GraphQL-схема
+from djangoset.schema import schema
 
 class GraphQLTests(TestCase):
     def setUp(self):
