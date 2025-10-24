@@ -19,7 +19,12 @@ class Query(graphene.ObjectType):
 
     def resolve_user_card(root, info, tg_id):
         user = Users.objects.get(tg_id=tg_id)
-        return Cards.objects.filter(user=user)
+        cards = Cards.objects.filter(user=user)
+
+        for card in cards:
+            card.item_price = card.tea_item.item_price_rub * card.quantity
+
+        return cards
 
     def resolve_user_order(root, info, tg_id):
         user = Users.objects.get(tg_id=tg_id)
