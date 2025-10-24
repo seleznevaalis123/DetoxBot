@@ -45,7 +45,7 @@ class AddToCart(graphene.Mutation):
             tea_item=tea_item,
             defaults={
                 "quantity": quantity,
-                "item_price": tea_item.item_price_idr,
+                "item_price": tea_item.item_price_rub,
                 "currency": "RUB",
             },
         )
