@@ -57,17 +57,17 @@ class AddToCart(graphene.Mutation):
 class CreateOrder(graphene.Mutation):
     class Arguments:
         tg_id = graphene.String(required=True)
-        delivery_address = graphene.String(required=True)
+        delivery_address = graphene.String(required=False)
 
     order = graphene.Field(OrdersType)
 
     @staticmethod
-    def mutate(root, info, tg_id, delivery_address):
+    def mutate(root, info, tg_id, delivery_address=None):
         user = Users.objects.get(tg_id=tg_id)
         cart_items = Cards.objects.filter(user=user)
         if not cart_items.exists():
             raise Exception("Cart is empty")
-        order = Orders.objects.create(user=user, status="NEW", delivery_address=delivery_address)
+        order = Orders.objects.create(user=user, status="NEW", delivery_address=delivery_address or "")
         for card in cart_items:
             OrderItems.objects.create(
                 order=order,
