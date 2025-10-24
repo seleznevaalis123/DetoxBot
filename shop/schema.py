@@ -33,7 +33,6 @@ class AddToCart(graphene.Mutation):
         tea_item_id = graphene.Int(required=True)
         quantity = graphene.Int(required=False, default_value=1)
 
-    ok = graphene.Boolean()
     card = graphene.Field(CardsType)
 
     @staticmethod
@@ -52,7 +51,7 @@ class AddToCart(graphene.Mutation):
         if not created:
             card.quantity += quantity
             card.save()
-        return AddToCart(ok=True, card=card)
+        return AddToCart(card=card)
 
 
 class CreateOrder(graphene.Mutation):
@@ -60,7 +59,6 @@ class CreateOrder(graphene.Mutation):
         tg_id = graphene.String(required=True)
         delivery_address = graphene.String(required=True)
 
-    ok = graphene.Boolean()
     order = graphene.Field(OrdersType)
 
     @staticmethod
@@ -79,5 +77,5 @@ class CreateOrder(graphene.Mutation):
                 currency=card.currency
             )
         cart_items.delete()
-        return CreateOrder(ok=True, order=order)
+        return CreateOrder(order=order)
 
