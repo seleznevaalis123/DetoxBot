@@ -1,4 +1,6 @@
 import graphene
+from django.db import transaction
+
 from djangoset.types import CategoryType, TeaItemsType, CardsType, OrdersType
 from shop.models import Category, TeaItems, Cards, Orders, Users, OrderItems
 
@@ -32,31 +34,56 @@ class Query(graphene.ObjectType):
 
 
 # Mutation
-class AddToCart(graphene.Mutation):
+class UpdateCart(graphene.Mutation):
     class Arguments:
         tg_id = graphene.String(required=True)
         tea_item_id = graphene.Int(required=True)
         quantity = graphene.Int(required=False, default_value=1)
+        action = graphene.String(required=True)  # "add" или "remove"
 
     card = graphene.Field(CardsType)
 
     @staticmethod
-    def mutate(root, info, tg_id, tea_item_id, quantity):
+    @transaction.atomic
+    def mutate(root, info, tg_id, tea_item_id, quantity, action):
+        # базовая валидация
+        action = (action or "").lower()
+        if action not in ("add", "remove"):
+            raise Exception("Неверное значение action: ожидается 'add' или 'remove'")
+
+        # получаем пользователя и товар (вызовет DoesNotExist, если нет)
         user = Users.objects.get(tg_id=tg_id)
         tea_item = TeaItems.objects.get(id=tea_item_id)
-        card, created = Cards.objects.get_or_create(
-            user=user,
-            tea_item=tea_item,
-            defaults={
-                "quantity": quantity,
-                "item_price": tea_item.item_price_rub,
-                "currency": "RUB",
-            },
-        )
-        if not created:
-            card.quantity += quantity
+
+        if action == "add":
+            card, created = Cards.objects.get_or_create(
+                user=user,
+                tea_item=tea_item,
+                defaults={
+                    "quantity": quantity,
+                    "item_price": tea_item.item_price_rub,  # цена за 1 штуку, если храниш так
+                    "currency": "RUB",
+                },
+            )
+            if not created:
+                card.quantity += quantity
+                card.save()
+            return UpdateCart(card=card)
+
+        # action == "remove"
+        try:
+            card = Cards.objects.get(user=user, tea_item=tea_item)
+        except Cards.DoesNotExist:
+            raise Exception("Товар не найден в корзине")
+
+        if card.quantity > quantity:
+            card.quantity -= quantity
             card.save()
-        return AddToCart(card=card)
+            return UpdateCart(card=card)
+        else:
+            # удаляем запись, если количество стало <= 0
+            card.delete()
+            return UpdateCart(card=None)
 
 
 class CreateOrder(graphene.Mutation):
