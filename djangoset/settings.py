@@ -86,17 +86,21 @@ MIDDLEWARE = [
 
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "https://detoxbot-production.up.railway.app",
-    "https://frontend-bot1.vercel.app",
-    "https://pushkatea.space",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "https://detoxbot-production.up.railway.app",
+#     "https://frontend-bot1.vercel.app",
+#     "https://pushkatea.space",
+# ]
 
 ALLOWED_HOSTS = ['localhost',
                  'detoxbot-production.up.railway.app',
                  'pushkatea.space',
                  'frontend-bot1.vercel.app']
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337',
                         'https://pushkatea.space',
