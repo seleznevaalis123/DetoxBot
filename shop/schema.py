@@ -91,8 +91,6 @@ class UpdateCart(graphene.Mutation):
             return UpdateCart(card=None)
 
 
-
-
 class CreateOrder(graphene.Mutation):
     class Arguments:
         tg_id = graphene.String(required=True)

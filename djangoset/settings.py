@@ -85,7 +85,7 @@ MIDDLEWARE = [
 ]
 
 
-
+#Раскомментировать на PROD
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:3000",
 #     "https://detoxbot-production.up.railway.app",
@@ -99,8 +99,6 @@ MIDDLEWARE = [
 #                  'frontend-bot1.vercel.app']
 
 ALLOWED_HOSTS = ['*']
-
-
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
@@ -201,8 +199,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 LOGGING = {
