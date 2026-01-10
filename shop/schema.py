@@ -118,7 +118,7 @@ class CreateOrder(graphene.Mutation):
         cart_items.delete()
 
         try:
-            bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+            bot = Bot(token=settings.BOT_TOKEN)
 
             items = order.items.select_related("tea_item")
 
