@@ -132,7 +132,7 @@ class CreateOrder(graphene.Mutation):
                 currency = item.currency or currency
 
                 lines.append(
-                    f"🍵 {item.tea_item.name} — {item.quantity} × {item.price} {item.currency}"
+                    f"🍵 {item.tea_item.item_name} — {item.quantity} × {item.price} {item.currency}"
                 )
 
             text = (
