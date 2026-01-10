@@ -3,7 +3,7 @@ from django.db import transaction
 
 from djangoset.types import CategoryType, TeaItemsType, CardsType, OrdersType
 from shop.models import Category, TeaItems, Cards, Orders, Users, OrderItems
-
+from shop.tasks import send_order_to_user
 
 class Query(graphene.ObjectType):
     categories = graphene.List(CategoryType)
@@ -114,5 +114,8 @@ class CreateOrder(graphene.Mutation):
                 currency=card.currency
             )
         cart_items.delete()
+
+        send_order_to_user.delay(order.id)
+
         return CreateOrder(order=order)
 
