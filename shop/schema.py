@@ -1,9 +1,10 @@
 import graphene
-from django.db import transaction
-
+from aiogram import Bot
 from djangoset.types import CategoryType, TeaItemsType, CardsType, OrdersType
 from shop.models import Category, TeaItems, Cards, Orders, Users, OrderItems
-from shop.tasks import send_order_to_user
+from django.conf import settings
+import asyncio
+
 
 class Query(graphene.ObjectType):
     categories = graphene.List(CategoryType)
@@ -113,9 +114,44 @@ class CreateOrder(graphene.Mutation):
                 quantity=card.quantity,
                 currency=card.currency
             )
+
         cart_items.delete()
 
-        send_order_to_user.delay(order.id)
+        try:
+            bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+
+            items = order.items.select_related("tea_item")
+
+            lines = []
+            total = 0
+            currency = ""
+
+            for item in items:
+                line_total = item.price * item.quantity
+                total += line_total
+                currency = item.currency or currency
+
+                lines.append(
+                    f"🍵 {item.tea_item.name} — {item.quantity} × {item.price} {item.currency}"
+                )
+
+            text = (
+                    "🧾 *Заказ оформлен*\n\n"
+                    + "\n".join(lines)
+                    + f"\n\n💰 Итого: {total} {currency}"
+            )
+
+            asyncio.run(
+                bot.send_message(
+                    chat_id=user.tg_id,
+                    text=text,
+                    parse_mode="Markdown"
+                )
+            )
+
+        except Exception as e:
+            print("Telegram error:", e)
 
         return CreateOrder(order=order)
+
 
