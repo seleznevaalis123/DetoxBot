@@ -138,8 +138,8 @@ class CreateOrder(graphene.Mutation):
             text = (
                     "🧾 *Заказ оформлен*\n\n"
                     + "\n".join(lines)
-                    + f"\n\n💰 Итого: {total} {currency}"
-                      f"Для оплаты и доставки менеджер свяжется с вами в ближайшее время!"
+                    + f"\n\n💰 Итого: {total} {currency} "
+                      f"\n Спасибо за заказ! Менеджер свяжется с вами в ближайшее время для оплаты!"
             )
 
             asyncio.run(
