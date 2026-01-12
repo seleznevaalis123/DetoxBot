@@ -2,7 +2,6 @@ import graphene
 from aiogram import Bot
 from djangoset.types import CategoryType, TeaItemsType, CardsType, OrdersType
 from shop.models import Category, TeaItems, Cards, Orders, Users, OrderItems
-from django.core.mail import send_mail
 from django.conf import settings
 import asyncio
 
@@ -104,16 +103,9 @@ class CreateOrder(graphene.Mutation):
     def mutate(root, info, tg_id, delivery_address=None):
         user = Users.objects.get(tg_id=tg_id)
         cart_items = Cards.objects.filter(user=user)
-
         if not cart_items.exists():
             raise Exception("Cart is empty")
-
-        order = Orders.objects.create(
-            user=user,
-            status="NEW",
-            delivery_address=delivery_address or ""
-        )
-
+        order = Orders.objects.create(user=user, status="NEW", delivery_address=delivery_address or "")
         for card in cart_items:
             OrderItems.objects.create(
                 order=order,
@@ -125,24 +117,6 @@ class CreateOrder(graphene.Mutation):
 
         cart_items.delete()
 
-        # 📧 Email менеджеру
-        try:
-            send_mail(
-                subject="🛒 Новый заказ",
-                message=(
-                    f"Оформлен новый заказ.\n\n"
-                    f"Номер заказа: {order.id}\n"
-                    f"Пользователь: {user.tg_id}\n"
-                    f"Адрес доставки: {order.delivery_address}\n"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[settings.MANAGER_EMAIL],
-                fail_silently=False,
-            )
-        except Exception as e:
-            print("Manager email error:", e)
-
-        # 🤖 Telegram пользователю
         try:
             bot = Bot(token=settings.BOT_TOKEN)
 
@@ -164,8 +138,8 @@ class CreateOrder(graphene.Mutation):
             text = (
                     "🧾 *Заказ оформлен*\n\n"
                     + "\n".join(lines)
-                    + f"\n\n💰 Итого: {total} {currency}"
-                      f"\n\nСпасибо за заказ! Менеджер свяжется с вами в ближайшее время для оплаты!"
+                    + f"\n\n💰 Итого: {total} {currency} "
+                      f"\n\n Спасибо за заказ! Менеджер свяжется с вами в ближайшее время для оплаты!"
             )
 
             asyncio.run(
@@ -180,6 +154,5 @@ class CreateOrder(graphene.Mutation):
             print("Telegram error:", e)
 
         return CreateOrder(order=order)
-
 
 
