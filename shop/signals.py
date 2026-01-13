@@ -18,7 +18,7 @@ def notify_manager_on_order(sender, instance, created, **kwargs):
             message=f'Создан новый заказ.\n\n{instance}',
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=['selezneva.test@yandex.ru'],
-            fail_silently=True,  # ОБЯЗАТЕЛЬНО
+            fail_silently=True,
         )
 
     transaction.on_commit(
