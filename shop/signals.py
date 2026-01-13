@@ -1,3 +1,4 @@
+import threading
 from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -14,10 +15,12 @@ def notify_manager_on_order(sender, instance, created, **kwargs):
     def send():
         send_mail(
             subject=f'Новый заказ #{instance.id}',
-            message=f'Создан новый заказ. Детали:\n\n{instance}',
+            message=f'Создан новый заказ.\n\n{instance}',
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=['selezneva.test@yandex.ru'],
-            fail_silently=True,
+            fail_silently=True,  # ОБЯЗАТЕЛЬНО
         )
 
-    transaction.on_commit(send)
+    transaction.on_commit(
+        lambda: threading.Thread(target=send, daemon=True).start()
+    )
