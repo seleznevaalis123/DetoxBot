@@ -1,21 +1,23 @@
-# shop/signals.py
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
-from .models import Orders
 from django.conf import settings
+from .models import Orders
 
 
 @receiver(post_save, sender=Orders)
 def notify_manager_on_order(sender, instance, created, **kwargs):
-    if created:
-        subject = f'Новый заказ #{instance.id}'
-        message = f'Создан новый заказ. Детали:\n\n{instance}'
-        manager_email = 'selezneva.test@yandex.ru'
+    if not created:
+        return
+
+    def send():
         send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [manager_email],
-            fail_silently=False,
+            subject=f'Новый заказ #{instance.id}',
+            message=f'Создан новый заказ. Детали:\n\n{instance}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=['selezneva.test@yandex.ru'],
+            fail_silently=True,
         )
+
+    transaction.on_commit(send)
