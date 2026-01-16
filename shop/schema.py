@@ -4,6 +4,7 @@ from djangoset.types import CategoryType, TeaItemsType, CardsType, OrdersType
 from shop.models import Category, TeaItems, Cards, Orders, Users, OrderItems
 from django.conf import settings
 import asyncio
+from django.core.mail import send_mail
 
 
 class Query(graphene.ObjectType):
@@ -102,21 +103,31 @@ class CreateOrder(graphene.Mutation):
     @staticmethod
     def mutate(root, info, tg_id, delivery_address=None):
         user = Users.objects.get(tg_id=tg_id)
+
         cart_items = Cards.objects.filter(user=user)
         if not cart_items.exists():
             raise Exception("Cart is empty")
-        order = Orders.objects.create(user=user, status="NEW", delivery_address=delivery_address or "")
+
+        # 1. создаём заказ
+        order = Orders.objects.create(
+            user=user,
+            status="NEW",
+            delivery_address=delivery_address or "",
+        )
+
+        # 2. переносим товары в заказ
         for card in cart_items:
             OrderItems.objects.create(
                 order=order,
                 tea_item=card.tea_item,
                 price=card.item_price,
                 quantity=card.quantity,
-                currency=card.currency
+                currency=card.currency,
             )
 
         cart_items.delete()
 
+        # 3. уведомление пользователю в Telegram
         try:
             bot = Bot(token=settings.BOT_TOKEN)
 
@@ -130,29 +141,42 @@ class CreateOrder(graphene.Mutation):
                 line_total = item.price * item.quantity
                 total += line_total
                 currency = item.currency or currency
-
                 lines.append(
-                    f"🍵 {item.tea_item} - {item.quantity} × {item.price} {item.currency}"
+                    f"🍵 {item.tea_item} — {item.quantity} × {item.price} {item.currency}"
                 )
 
             text = (
                     "🧾 *Заказ оформлен*\n\n"
                     + "\n".join(lines)
-                    + f"\n\n💰 Итого: {total} {currency} "
-                      f"\n\n Спасибо за заказ! Менеджер свяжется с вами в ближайшее время для оплаты!"
+                    + f"\n\n💰 Итого: {total} {currency}"
+                      "\n\nСпасибо за заказ! Менеджер свяжется с вами для оплаты."
             )
 
             asyncio.run(
                 bot.send_message(
                     chat_id=user.tg_id,
                     text=text,
-                    parse_mode="Markdown"
+                    parse_mode="Markdown",
                 )
             )
-
         except Exception as e:
             print("Telegram error:", e)
 
+        # 4. письмо менеджеру (ПОСЛЕДНИЙ ШАГ)
+        try:
+            send_mail(
+                subject=f"Новый заказ #{order.id}",
+                message=(
+                    f"Создан новый заказ\n\n"
+                    f"Заказ №{order.id}\n"
+                    f"Пользователь: {user}\n"
+                    f"Адрес доставки: {order.delivery_address}"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=["selezneva.test@ya.ru"],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print("Email error:", e)
+
         return CreateOrder(order=order)
-
-
