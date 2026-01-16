@@ -5,6 +5,7 @@ from shop.models import Category, TeaItems, Cards, Orders, Users, OrderItems
 from django.conf import settings
 import asyncio
 from django.core.mail import send_mail
+import threading
 
 
 class Query(graphene.ObjectType):
@@ -93,6 +94,13 @@ class UpdateCart(graphene.Mutation):
             return UpdateCart(card=None)
 
 
+def send_telegram_message(user, text):
+    async def _send():
+        bot = Bot(token=settings.BOT_TOKEN)
+        await bot.send_message(chat_id=user.tg_id, text=text, parse_mode="Markdown")
+        await bot.session.close()
+    asyncio.run(_send())
+
 class CreateOrder(graphene.Mutation):
     class Arguments:
         tg_id = graphene.String(required=True)
@@ -102,81 +110,54 @@ class CreateOrder(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, tg_id, delivery_address=None):
+        # --- 1. Получаем пользователя и корзину ---
         user = Users.objects.get(tg_id=tg_id)
-
         cart_items = Cards.objects.filter(user=user)
         if not cart_items.exists():
             raise Exception("Cart is empty")
 
-        # 1. создаём заказ
-        order = Orders.objects.create(
-            user=user,
-            status="NEW",
-            delivery_address=delivery_address or "",
-        )
-
-        # 2. переносим товары в заказ
+        # --- 2. Создаём заказ ---
+        order = Orders.objects.create(user=user, status="NEW", delivery_address=delivery_address or "")
         for card in cart_items:
             OrderItems.objects.create(
                 order=order,
                 tea_item=card.tea_item,
                 price=card.item_price,
                 quantity=card.quantity,
-                currency=card.currency,
+                currency=card.currency
             )
-
         cart_items.delete()
 
-        # 3. уведомление пользователю в Telegram
-        try:
-            bot = Bot(token=settings.BOT_TOKEN)
+        # --- 3. Готовим текст уведомления ---
+        items = order.items.select_related("tea_item")
+        lines, total, currency = [], 0, ""
+        for item in items:
+            total += item.price * item.quantity
+            currency = item.currency or currency
+            lines.append(f"🍵 {item.tea_item} - {item.quantity} × {item.price} {item.currency}")
 
-            items = order.items.select_related("tea_item")
+        telegram_text = (
+                "🧾 *Заказ оформлен*\n\n"
+                + "\n".join(lines)
+                + f"\n\n💰 Итого: {total} {currency}"
+                  "\n\nСпасибо за заказ! Менеджер свяжется с вами для оплаты."
+        )
 
-            lines = []
-            total = 0
-            currency = ""
+        # --- 4. Отправка Telegram в фоне ---
+        threading.Thread(target=send_telegram_message, args=(user, telegram_text), daemon=True).start()
 
-            for item in items:
-                line_total = item.price * item.quantity
-                total += line_total
-                currency = item.currency or currency
-                lines.append(
-                    f"🍵 {item.tea_item} — {item.quantity} × {item.price} {item.currency}"
-                )
+        # --- 5. Отправка Email менеджеру в фоне ---
+        threading.Thread(
+            target=send_mail,
+            kwargs={
+                "subject": f"Новый заказ #{order.id}",
+                "message": f"Создан новый заказ #{order.id}\n\n{order}",
+                "from_email": settings.EMAIL_HOST_USER,
+                "recipient_list": ["selezneva.test@ya.ru"],
+                "fail_silently": True,
+            },
+            daemon=True,
+        ).start()
 
-            text = (
-                    "🧾 *Заказ оформлен*\n\n"
-                    + "\n".join(lines)
-                    + f"\n\n💰 Итого: {total} {currency}"
-                      "\n\nСпасибо за заказ! Менеджер свяжется с вами для оплаты."
-            )
-
-            asyncio.run(
-                bot.send_message(
-                    chat_id=user.tg_id,
-                    text=text,
-                    parse_mode="Markdown",
-                )
-            )
-        except Exception as e:
-            print("Telegram error:", e)
-
-        # 4. письмо менеджеру (ПОСЛЕДНИЙ ШАГ)
-        try:
-            send_mail(
-                subject=f"Новый заказ #{order.id}",
-                message=(
-                    f"Создан новый заказ\n\n"
-                    f"Заказ №{order.id}\n"
-                    f"Пользователь: {user}\n"
-                    f"Адрес доставки: {order.delivery_address}"
-                ),
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=["selezneva.test@ya.ru"],
-                fail_silently=False,
-            )
-        except Exception as e:
-            print("Email error:", e)
-
+        # --- 6. Возвращаем заказ мгновенно ---
         return CreateOrder(order=order)
