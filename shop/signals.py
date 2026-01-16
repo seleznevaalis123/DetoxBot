@@ -18,7 +18,6 @@ def notify_manager_on_order(sender, instance, created, **kwargs):
             message=f'Создан новый заказ.\n\n{instance}',
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=['selezneva.test@ya.ru'],
-            reply_to=["no-reply@ya.ru"],
             fail_silently=True,
         )
 
