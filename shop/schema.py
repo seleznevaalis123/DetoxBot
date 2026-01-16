@@ -4,8 +4,6 @@ from djangoset.types import CategoryType, TeaItemsType, CardsType, OrdersType
 from shop.models import Category, TeaItems, Cards, Orders, Users, OrderItems
 from django.conf import settings
 import asyncio
-from django.core.mail import send_mail
-import threading
 
 
 class Query(graphene.ObjectType):
@@ -94,13 +92,6 @@ class UpdateCart(graphene.Mutation):
             return UpdateCart(card=None)
 
 
-def send_telegram_message(user, text):
-    async def _send():
-        bot = Bot(token=settings.BOT_TOKEN)
-        await bot.send_message(chat_id=user.tg_id, text=text, parse_mode="Markdown")
-        await bot.session.close()
-    asyncio.run(_send())
-
 class CreateOrder(graphene.Mutation):
     class Arguments:
         tg_id = graphene.String(required=True)
@@ -110,13 +101,10 @@ class CreateOrder(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, tg_id, delivery_address=None):
-        # --- 1. Получаем пользователя и корзину ---
         user = Users.objects.get(tg_id=tg_id)
         cart_items = Cards.objects.filter(user=user)
         if not cart_items.exists():
             raise Exception("Cart is empty")
-
-        # --- 2. Создаём заказ ---
         order = Orders.objects.create(user=user, status="NEW", delivery_address=delivery_address or "")
         for card in cart_items:
             OrderItems.objects.create(
@@ -126,38 +114,45 @@ class CreateOrder(graphene.Mutation):
                 quantity=card.quantity,
                 currency=card.currency
             )
+
         cart_items.delete()
 
-        # --- 3. Готовим текст уведомления ---
-        items = order.items.select_related("tea_item")
-        lines, total, currency = [], 0, ""
-        for item in items:
-            total += item.price * item.quantity
-            currency = item.currency or currency
-            lines.append(f"🍵 {item.tea_item} - {item.quantity} × {item.price} {item.currency}")
+        try:
+            bot = Bot(token=settings.BOT_TOKEN)
 
-        telegram_text = (
-                "🧾 *Заказ оформлен*\n\n"
-                + "\n".join(lines)
-                + f"\n\n💰 Итого: {total} {currency}"
-                  "\n\nСпасибо за заказ! Менеджер свяжется с вами для оплаты."
-        )
+            items = order.items.select_related("tea_item")
 
-        # --- 4. Отправка Telegram в фоне ---
-        threading.Thread(target=send_telegram_message, args=(user, telegram_text), daemon=True).start()
+            lines = []
+            total = 0
+            currency = ""
 
-        # --- 5. Отправка Email менеджеру в фоне ---
-        threading.Thread(
-            target=send_mail,
-            kwargs={
-                "subject": f"Новый заказ #{order.id}",
-                "message": f"Создан новый заказ #{order.id}\n\n{order}",
-                "from_email": settings.EMAIL_HOST_USER,
-                "recipient_list": ["selezneva.test@ya.ru"],
-                "fail_silently": True,
-            },
-            daemon=True,
-        ).start()
+            for item in items:
+                line_total = item.price * item.quantity
+                total += line_total
+                currency = item.currency or currency
 
-        # --- 6. Возвращаем заказ мгновенно ---
+                lines.append(
+                    f"🍵 {item.tea_item} - {item.quantity} × {item.price} {item.currency}"
+                )
+
+            text = (
+                    "🧾 *Заказ оформлен*\n\n"
+                    + "\n".join(lines)
+                    + f"\n\n💰 Итого: {total} {currency} "
+                      f"\n\n Спасибо за заказ! Менеджер свяжется с вами в ближайшее время для оплаты!"
+            )
+
+            asyncio.run(
+                bot.send_message(
+                    chat_id=user.tg_id,
+                    text=text,
+                    parse_mode="Markdown"
+                )
+            )
+
+        except Exception as e:
+            print("Telegram error:", e)
+
         return CreateOrder(order=order)
+
+
