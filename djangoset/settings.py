@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     'storages',
     'tinymce',
     'graphene_django',
-    'corsheaders'
+    'corsheaders',
     'shop.apps.ShopConfig',
 ]
 GRAPHENE = {
