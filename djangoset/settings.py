@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     'tinymce',
     'graphene_django',
     'corsheaders'
-    # 'django_email_signals',
+    'shop.apps.ShopConfig',
 ]
 GRAPHENE = {
     "SCHEMA": "djangoset.schema.schema"
