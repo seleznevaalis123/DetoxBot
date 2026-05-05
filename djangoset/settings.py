@@ -102,7 +102,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:1337',
-                        'https://pushkatea.space',
+                        'https://letstea.site',
                         'https://detoxbot-production.up.railway.app',
                         'https://frontend-bot1.vercel.app']
 
